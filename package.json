@@ -1,0 +1,18 @@
+{
+  "name": "vladiator",
+  "version": "0.1.0",
+  "description": "Validation library",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "license": "MIT",
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kenmorechalfant/vladiator"
+  },
+  "devDependencies": {
+    "jest": "^22.4.2"
+  }
+}
