@@ -12,7 +12,7 @@ let data = {
 }
 
 const schema = {
-  name: Vladiator.field.required().max(12, 'Custom Message: max 10 chars')
+  name: Vladiator.field.required().max(12, 'Custom Message: max 12 chars')
 }
 
 let result = Vladiator.validate(data, schema)
