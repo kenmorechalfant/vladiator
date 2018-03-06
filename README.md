@@ -21,7 +21,7 @@ let result = Vladiator.validate(data, schema)
 {
   valid: false,
   errors: {
-    name: [ 'Custom Message: max 10 chars' ]
+    name: [ 'Custom Message: max 12 chars' ]
   }
 }
 */
