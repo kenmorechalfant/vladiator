@@ -2,7 +2,7 @@
 
 Javascript validation library. Create a schema with chainable rules.
 
-## Usage
+## Example
 
 ```js
 const Vladiator = require('vladiator')
@@ -12,7 +12,7 @@ let data = {
 }
 
 const schema = {
-  field: Vladiator.field.required().max(10, 'Custom Message: max 10 chars')
+  name: Vladiator.field.required().max(10, 'Custom Message: max 10 chars')
 }
 
 let result = Vladiator.validate(data, schema)
