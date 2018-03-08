@@ -2,6 +2,9 @@
 TODO:
 - figure out how this works with selects, radios, checkboxes, etc
 - custom named patterns
+- min() and max() should check value of the number on a .num() (rather than length)
+  - OR - num() takes in a min and max itself
+  - ..what to do about conflicting rules: max is less than min, alpha + num
 */
 
 const Tests = {
@@ -9,19 +12,21 @@ const Tests = {
   min: (value, opts) => (value.length >= opts.length),
   max: (value, opts) => (value.length <= opts.length),
   alpha: (value) => /^[A-z]*$/.test(value),
+  num: (value) =>  /^\d*$/.test(value),
   alphanum: (value) =>  /^\w*$/.test(value),
   email: (value) =>  /^\S+@\S+\.\S+$/.test(value),
   regex: (value, opts) => opts.regex.test(value)
 }
 
-const Messages = {
-  default: (opts) => `${ opts.key } is invalid`,
-  required: (opts) => `${ opts.key } is required`,
-  min: (opts) => `${ opts.key } must be at least ${ opts.length } characters`,
-  max: (opts) => `${ opts.key } must be ${ opts.length } characters or less`,
-  alpha: (opts) => `${ opts.key } must only contain letters`,
-  alphanum: (opts) => `${ opts.key } must only contain letters and numbers`,
-  regex: (opts) => `${ opts.key } is invalid`
+const DefaultMessages = {
+  default: (opts) => `${opts.key} is invalid`,
+  required: (opts) => `${opts.key} is required`,
+  min: (opts) => `${opts.key} must be at least ${opts.length} characters`,
+  max: (opts) => `${opts.key} must be ${opts.length} characters or less`,
+  alpha: (opts) => `${opts.key} must only contain letters`,
+  num: (opts) => `${opts.key} must only contain numbers`,
+  alphanum: (opts) => `${opts.key} must only contain letters and numbers`,
+  regex: (opts) => `${opts.key} is invalid`
 }
 
 /**
@@ -90,58 +95,82 @@ class Field {
 
     ruleNames.forEach(ruleName => {
       let opts = this.rules[ruleName]
+      let message = opts.message
       let valid = Tests[ruleName](input, opts)
 
-      if (!valid) errors.push(this.getErrorMessage(ruleName, opts))
+      if (!valid) errors.push(message)
     })
 
     return errors
   }
 
-  getErrorMessage(ruleName, opts) {
-    if (opts.message) return opts.message
-
-    return Messages[ruleName] ?
-      Messages[ruleName](opts) : Messages['default'](opts)
-  }
-
   required(message) {
-    this.rules.required = { message: message }
+    this.rules.required = getErrorRule('required', message)
     return this
   }
 
   min(length, message) {
-    if (typeof(length) !== 'number') throw new Error('.min() must take a Number')
-    this.rules.min = { message: message, length: length }
+    validateLength(length, 'min')
+    this.rules.min = getErrorRule('min', message, { length })
     return this
   }
 
   max(length, message) {
-    if (typeof(length) !== 'number') throw new Error('.max() must take a Number')
-    this.rules.max = { message: message, length: length }
+    validateLength(length, 'max')
+    this.rules.max = getErrorRule('max', message, { length })
     return this
   }
 
   alpha(message) {
-    this.rules.alpha = { message: message }
+    this.rules.alpha = getErrorRule('alpha', message)
+    return this
+  }
+
+  num(message) {
+    this.rules.num = getErrorRule('num', message)
     return this
   }
 
   alphanum(message) {
-    this.rules.alphanum = { message: message }
+    this.rules.alphanum = getErrorRule('alphanum', message)
     return this
   }
 
   email(message) {
-    this.rules.email = { message: message }
+    this.rules.email = getErrorRule('email', message)
     return this
   }
 
   regex(regex, message) {
     if (! regex instanceof RegExp) throw new Error('.regex() must take a RegExp')
-    this.rules.regex = { message: message, regex: regex }
+    this.rules.regex = getErrorRule('regex', message, { regex })
     return this
   }
+}
+
+function getErrorRule(ruleName, message, opts = {}) {
+  let outMessage
+
+  switch (typeof message) {
+    case 'string':
+      outMessage = message
+      break
+    case 'function':
+      outMessage = message(opts)
+      break
+    default:
+      outMessage = DefaultMessages[ruleName] ?
+      DefaultMessages[ruleName](opts) : DefaultMessages['default'](opts)
+  }
+
+  opts.message = outMessage
+  return opts
+}
+
+function validateLength(length, ruleName) {
+  if (typeof(length) !== 'number') throw new Error(`.${ruleName}() length must be a Number`)
+  if (!Number.isInteger(length)) throw new Error(`.${ruleName}() length must be an Integer`)
+  if (length < 1) throw new Error(`.${ruleName}() length must be greater than 0`)
 }
 
 /**
