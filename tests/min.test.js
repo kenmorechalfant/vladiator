@@ -14,6 +14,12 @@ describe('Min rule', () => {
     }).toThrow()
   })
 
+  test('fails with float length', () => {
+    expect(() => {
+      let schema = { minField: Vladiator.field.min(1.2) }
+    }).toThrow()
+  })
+
   test('fails with too short string', () => {
     let schema = { minField: Vladiator.field.min(5) }
     let data = { minField: '1234' }

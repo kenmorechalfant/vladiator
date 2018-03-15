@@ -168,9 +168,11 @@ function getErrorRule(ruleName, message, opts = {}) {
 }
 
 function validateLength(length, ruleName) {
-  if (typeof(length) !== 'number') throw new Error(`.${ruleName}() length must be a Number`)
-  if (!Number.isInteger(length)) throw new Error(`.${ruleName}() length must be an Integer`)
-  if (length < 1) throw new Error(`.${ruleName}() length must be greater than 0`)
+  if (typeof(length) === 'number' && Number.isInteger(length) && length > 0) {
+    return true
+  } else {
+    throw new Error(`.${ruleName}() length must be a Positive Integer`)
+  }
 }
 
 /**
