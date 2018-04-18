@@ -56,7 +56,7 @@ class Vladiator {
     let fieldNames = Object.keys(schema)
 
     fieldNames.forEach(fieldName => {
-      let fieldErrors = schema[fieldName].test(obj[fieldName])
+      let fieldErrors = schema[fieldName].test(obj[fieldName], fieldName)
 
       if (fieldErrors.length) {
         valid = false
@@ -87,7 +87,7 @@ class Field {
     this.rules = {}
   }
 
-  test(input) {
+  test(input, fieldName) {
     let errors = [],
         ruleNames = Object.keys(this.rules)
 
@@ -95,7 +95,8 @@ class Field {
 
     ruleNames.forEach(ruleName => {
       let opts = this.rules[ruleName]
-      let message = opts.message
+      opts.key = fieldName
+      let message = opts.message(opts)
       let valid = Tests[ruleName](input, opts)
 
       if (!valid) errors.push(message)
@@ -153,14 +154,14 @@ function getErrorRule(ruleName, message, opts = {}) {
 
   switch (typeof message) {
     case 'string':
-      outMessage = message
+      outMessage = () => message
       break
     case 'function':
-      outMessage = message(opts)
+      outMessage = message
       break
     default:
       outMessage = DefaultMessages[ruleName] ?
-      DefaultMessages[ruleName](opts) : DefaultMessages['default'](opts)
+      DefaultMessages[ruleName] : DefaultMessages['default']
   }
 
   opts.message = outMessage
